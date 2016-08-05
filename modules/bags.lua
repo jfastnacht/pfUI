@@ -132,6 +132,7 @@ pfUI:RegisterModule("bags", function ()
       pfUI.bag.search:SetPoint("TOPLEFT", pfUI.bag, "TOPLEFT", pfUI_config.bars.border*2, -pfUI_config.bars.border*2)
       pfUI.bag.search:SetPoint("TOPRIGHT", pfUI.bag, "TOPRIGHT", -pfUI_config.bars.border*2 - 16, -pfUI_config.bars.border*2)
 
+      pfUI.bag.sorting:Hide()
       pfUI.bag.money:Hide()
     end)
   pfUI.bag.search.edit:SetScript("OnEditFocusLost", function()
@@ -157,6 +158,7 @@ pfUI:RegisterModule("bags", function ()
         end
       end
 
+      pfUI.bag.sorting:Show()
       pfUI.bag.money:Show()
     end)
 
@@ -296,6 +298,68 @@ pfUI:RegisterModule("bags", function ()
       y = y + 1
       pfUI.bag:SetHeight( y * button_size + y * pfUI_config.bars.border + pfUI_config.bars.border*3 + 17 + 17)
     end)
+
+  -- Bag Sorting Button
+  pfUI.bag.sorting = CreateFrame("Button", "pfUIBagSortingButton", pfUI.bag, "UIPanelButtonTemplate")
+  pfUI.bag.sorting:RegisterForClicks("LeftButtonUp")
+  -- Attach to money frame
+  pfUI.bag.sorting:SetPoint("RIGHT", pfUI.bag.money, "LEFT", -5, 0)
+  pfUI.bag.sorting:SetBackdrop(pfUI.backdrop)
+  pfUI.bag.sorting:SetHeight(15)
+  pfUI.bag.sorting:SetWidth(15)
+  -- Add Texture
+  local bagSortingButtonTexture = pfUI.bag.sorting:CreateTexture()
+  bagSortingButtonTexture:SetTexture("Interface\\Icons\\Spell_Nature_AstralRecal")
+  bagSortingButtonTexture:SetAllPoints()
+  pfUI.bag.sorting:SetNormalTexture(bagSortingButtonTexture)
+
+  -- Change backdrop color on hover
+  pfUI.bag.sorting:SetScript("OnEnter", function ()
+    pfUI.bag.sorting:SetBackdrop(pfUI.backdrop_col)
+    pfUI.bag.sorting:SetBackdropBorderColor(1,.25,.25,1)
+  end)
+  pfUI.bag.sorting:SetScript("OnLeave", function ()
+    pfUI.bag.sorting:SetBackdrop(pfUI.backdrop)
+    pfUI.bag.sorting:SetBackdropBorderColor(1,1,1,1)
+  end)
+
+  -- Sorting functionality
+  -- @TODO Sort items, move items
+  -- Inspired by EngInventory
+  -- Might be better to put this into a global function to be used by bag and bank
+  pfUI.bag.sorting:SetScript("OnClick", function()
+    local itemsInBag = {}
+    for j=1, 5 do
+      local slotarray = {}
+      for i=1, GetContainerNumSlots(j-1) do
+        local texture, itemCount, locked, quality, readable = GetContainerItemInfo(j-1, i)
+        local link = GetContainerItemLink(j-1,i)
+        if(link~=nil) then
+          local itemInBag = {}
+          message("Found: " .. link);
+          -- Taken from EngInventory
+          for a,b,c,d in string.gfind(link, "(%d+):(%d+):(%d+):(%d+)") do
+            if (a ~= "0") then
+              link = "item:"..a..":"..b..":"..c..":"..d
+              --itm["itemlink_noninstance"] = ""..a..":0:"..c..":0";
+            end
+          end
+          itemInBag['name'], _, itemInBag['rarity'], _, itemInBag['minLevel'], itemInBag['type'], itemInBag['subtype'], _, _ = GetItemInfo(link)
+          itemInBag['bag'] = j;
+          itemInBag['slot'] = i;
+          table.insert(itemsInBag, itemInBag)
+          -- itemsInBag.insert(itemInBag)
+        end
+      end
+    end
+    for i, itemInBag in pairs(itemsInBag) do
+      message("Item: " .. itemInBag['name'] .. " Bag: " .. itemInBag['bag'] .. " Slot: " .. itemInBag['slot'])
+    end
+    --PickupContainerItem(0,1)
+    --PickupContainerItem(0,2)
+  end)
+
+  -- End Sorting
 
   pfUI.bank:RegisterEvent("BAG_UPDATE");
   pfUI.bank:RegisterEvent("BANKFRAME_OPENED");
