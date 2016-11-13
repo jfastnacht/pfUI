@@ -466,4 +466,34 @@ pfUI:RegisterModule("player", function ()
       end
     end
   end
+
+  -- Create resting frame in player
+  pfUI.uf.player.resting = CreateFrame("Frame", nil, UIParent)
+  pfUI.uf.player.resting:SetWidth(16)
+  pfUI.uf.player.resting:SetHeight(16)
+  pfUI.uf.player.resting:SetPoint("BOTTOMRIGHT", pfUI.uf.player, "TOPLEFT", 8, -8)
+  -- Create resting indicator texture from game files
+  pfUI.uf.player.resting.texture = pfUI.uf.player.resting:CreateTexture(nil,"OVERLAY")
+  pfUI.uf.player.resting.texture:SetTexture("Interface\\CharacterFrame\\UI-StateIcon")
+  pfUI.uf.player.resting.texture:SetPoint("CENTER", 0, 0)
+  pfUI.uf.player.resting.texture:SetTexCoord(0, 0.5, 0, 0.5)
+  pfUI.uf.player.resting.texture:SetWidth(16)
+  pfUI.uf.player.resting.texture:SetHeight(16)
+
+  -- Show/Hide resting indicator based on state
+  function pfUI.uf.player.resting.RefreshRestingIndicator()
+    if IsResting() then
+      pfUI.uf.player.resting.texture:Show()
+    else
+      pfUI.uf.player.resting.texture:Hide()
+    end
+  end
+
+  -- Register PLAYER_UPDATE_RESTING event, which fires on guesthouse and major cities
+  pfUI.uf.player.resting:RegisterEvent("PLAYER_UPDATE_RESTING")
+  pfUI.uf.player.resting:SetScript("OnEvent", pfUI.uf.player.resting.RefreshRestingIndicator)
+
+  -- Init indicator on addon load
+  pfUI.uf.player.resting.RefreshRestingIndicator();
+
 end)
